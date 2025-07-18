@@ -1,0 +1,8 @@
+# Ignore backend build
+/backend/bin/
+/backend/obj/
+.vs
+
+# Ignore Angular build
+/frontend/dist/
+/frontend/node_modules/
