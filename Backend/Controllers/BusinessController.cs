@@ -27,7 +27,7 @@ namespace UniBill.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
+        [HttpGet("profile")]
         public async Task<IActionResult> GetBusinessById(int businessId)
         {
             if (businessId <= 0)
