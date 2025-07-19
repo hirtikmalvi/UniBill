@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UniBill.DTOs;
 using UniBill.DTOs.BusinessDTOs;
@@ -7,7 +9,9 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace UniBill.Controllers
 {
+    [EnableCors("AllowedAngular")]
     [Route("api/business")]
+    [Authorize]
     [ApiController]
     public class BusinessController(IBusinessService businessService) : ControllerBase
     {
@@ -27,7 +31,7 @@ namespace UniBill.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
+        [HttpGet("profile")]
         public async Task<IActionResult> GetBusinessById(int businessId)
         {
             if (businessId <= 0)

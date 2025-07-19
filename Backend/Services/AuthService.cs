@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using UniBill.Data;
@@ -20,7 +21,9 @@ namespace UniBill.Services
         {
             if (await context.Users.AnyAsync(u => u.Email == request.Email.Trim()))
             {
-                return CustomResult<RegistrationUserResponseDTO>.Fail("Email Already Exists.");
+                return CustomResult<RegistrationUserResponseDTO>.Fail("Registration Failed.", [
+                    "Email Already Exists."
+                ]);
             }
             var user = new User();
             user.Email = request.Email;

@@ -1,4 +1,7 @@
-﻿namespace UniBill.DTOs
+﻿using UniBill.DTOs.BusinessTypeDTOs;
+using UniBill.Models;
+
+namespace UniBill.DTOs
 {
     public class CustomResult<T>
     {

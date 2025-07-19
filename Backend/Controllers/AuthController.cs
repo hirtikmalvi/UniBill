@@ -1,4 +1,6 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UniBill.DTOs;
@@ -9,6 +11,7 @@ using UniBill.Services.IServices;
 
 namespace UniBill.Controllers
 {
+    [EnableCors("AllowedAngular")]
     [Route("api/auth")]
     [ApiController]
     public class AuthController(IAuthService authService) : ControllerBase
@@ -48,6 +51,14 @@ namespace UniBill.Controllers
                 return BadRequest(token);
             }
             return Ok(token);
+        }
+
+        [HttpGet("validate")]
+        [Authorize]
+        public IActionResult ValidateToken()
+        {
+            var response = CustomResult<string>.Ok("Token is valid", "Authentication Successful.");
+            return Ok(response);
         }
     }
 }
