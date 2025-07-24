@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.Tokens;
 using UniBill.Data;
 using UniBill.DTOs;
 using UniBill.Helper;
@@ -99,7 +100,14 @@ app.MapControllerRoute(
     pattern: "{controller}/{action}/{id?}"
 );
 
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller}/{action}/{id?}"
+);
+
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthentication();
 
