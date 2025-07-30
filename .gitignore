@@ -4,5 +4,6 @@
 .vs
 
 # Ignore Angular build
-/frontend/dist/
-/frontend/node_modules/
+/frontend/unibill/dist/
+/frontend/unibill/node_modules/
+/frontend/unibill/src/environments
