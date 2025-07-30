@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 using UniBill.Data;
 using UniBill.DTOs;
 using UniBill.DTOs.BusinessAddressDTOs;
@@ -10,23 +11,26 @@ using UniBill.Services.IServices;
 
 namespace UniBill.Services
 {
-    public class BusinessService(AppDbContext context) : IBusinessService
+    public class BusinessService(AppDbContext context, CurrentUserContext currentUserContext, ITokenService tokenService) : IBusinessService
     {
         public async Task<CustomResult<RegisterBusinessResponseDTO>> RegisterBusiness(RegisterBusinessDTO request)
         {
-            if (!(await context.Users.AnyAsync(u => u.UserId == request.UserId)))
+            var userId = currentUserContext.UserId;
+            var user = await context.Users.Include(u => u.Business).FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null)
             {
                 return CustomResult<RegisterBusinessResponseDTO>.Fail("Business Registration failed.", new List<string>
                 {
-                    $"User with UserId: {request.UserId} does not exits."
+                    $"User with UserId: {userId} does not exits."
                 });
             }
 
-            if (await context.Businesses.AnyAsync(b => b.UserId == request.UserId))
+            if (await context.Businesses.AnyAsync(b => b.UserId == userId))
             {
                 return CustomResult<RegisterBusinessResponseDTO>.Fail("Business Registration failed.", new List<string>
                 {
-                    $"Could not create Business because Business associated with UserId: {request.UserId} already exists."
+                    $"Could not create Business because Business associated with UserId: {userId} already exists."
                 });
             }
 
@@ -55,7 +59,7 @@ namespace UniBill.Services
             business.BusinessTypeId = request.BusinessTypeId;
             business.BusinessName = request.BusinessName;
             business.Phone = request.PhoneNo;
-            business.UserId = request.UserId;
+            business.UserId = userId;
             business.BusinessAddressId = addedAddress.Entity.AddressId;
 
             var addedBusiness = await context.Businesses.AddAsync(business);
@@ -66,12 +70,15 @@ namespace UniBill.Services
                 UserId = addedBusiness.Entity.UserId,
                 BusinessId = addedBusiness.Entity.BusinessId,
                 BusinessName = addedBusiness.Entity.BusinessName,
-                BusinessTypeId = addedBusiness.Entity.BusinessTypeId
+                BusinessTypeId = addedBusiness.Entity.BusinessTypeId,
+                AccessToken = tokenService.GenerateJwtToken(user)
             }, "Business Added Successfully.");
         }
-        public async Task<CustomResult<GetBusinessDTO>> GetBusiness(int businessId)
+        public async Task<CustomResult<GetBusinessDTO>> GetBusiness()
         {
-            if (!(await context.Businesses.AnyAsync(b => b.BusinessId == businessId)))
+            var businessId = currentUserContext.BusinessId;
+
+            if (!currentUserContext.HasBusiness ||  !(await context.Businesses.AnyAsync(b => b.BusinessId == businessId)))
             {
                 return CustomResult<GetBusinessDTO>.Fail($"Could not get Business.", new List<string>
                 {
@@ -103,12 +110,23 @@ namespace UniBill.Services
                     State = b.BusinessAddress.State,
                     Country = b.BusinessAddress.Country,
                     PinOrPostalCode = b.BusinessAddress.PinOrPostalCode,
-
                 }
-
             }).FirstOrDefaultAsync();
 
             return CustomResult<GetBusinessDTO>.Ok(business, "Business fetched successfully.");
+        }
+
+        public async Task<CustomResult<bool>> DoesUserHasBusiness()
+        {
+            var businessId = currentUserContext.BusinessId;
+            var userId = currentUserContext.UserId;
+
+            if (!currentUserContext.HasBusiness || !(await context.Businesses.AnyAsync(b => b.UserId == userId && b.BusinessId == businessId))) {
+                return CustomResult<bool>.Fail("Business not found.", [
+                    $"Could not found business associated with UserId: {userId}. Kindly register a business."
+                ]);
+            }
+            return CustomResult<bool>.Ok(true, "Business found successfully.");
         }
     }
 }

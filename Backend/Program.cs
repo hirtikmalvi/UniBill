@@ -51,7 +51,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
             context.Response.StatusCode = 401;
             context.Response.ContentType = "application/json";
 
-            var result = JsonSerializer.Serialize(CustomResult<string>.Fail("You are not Authenticated.", ["Token is missing or invalid."]));
+            var result = JsonSerializer.Serialize(CustomResult<string>.Fail("You are not Authenticated.", ["Token is missing or invalid."]), new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
             return context.Response.WriteAsync(result);
         },
 
@@ -61,7 +64,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
             context.Response.StatusCode = 403;
             context.Response.ContentType = "application/json";
 
-            var result = JsonSerializer.Serialize(CustomResult<string>.Fail("Access denied.", ["You are not authorised."]));
+            var result = JsonSerializer.Serialize(CustomResult<string>.Fail("Access denied.", ["You are not authorised."]), new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
             return context.Response.WriteAsync(result);
         }
     };
@@ -75,12 +81,13 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(buil
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IBusinessService, BusinessService>();
 builder.Services.AddScoped<IItemService, ItemService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IBillService, BillService>();
 builder.Services.AddScoped<ILookupService, LookupService>();
-builder.Services.AddScoped<HelperClass>();
+builder.Services.AddScoped<CurrentUserContext>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -100,20 +107,12 @@ app.MapControllerRoute(
     pattern: "{controller}/{action}/{id?}"
 );
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller}/{action}/{id?}"
-);
-
 app.UseHttpsRedirection();
 
+app.UseCors("AllowedAngular");
 app.UseAuthentication();
-
-app.UseAuthentication();
-
 app.UseAuthorization();
 
-app.UseCors("AllowedAngular");
 
 app.MapControllers();
 

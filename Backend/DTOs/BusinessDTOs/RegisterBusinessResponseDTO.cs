@@ -6,5 +6,6 @@
         public int BusinessId { get; set; }
         public string BusinessName { get; set; }
         public int BusinessTypeId { get; set; }
+        public string AccessToken { get; set; }
     }
 }

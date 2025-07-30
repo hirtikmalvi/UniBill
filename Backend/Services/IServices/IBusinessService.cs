@@ -7,6 +7,7 @@ namespace UniBill.Services.IServices
     public interface IBusinessService
     {
         Task<CustomResult<RegisterBusinessResponseDTO>> RegisterBusiness(RegisterBusinessDTO request);
-        Task<CustomResult<GetBusinessDTO>> GetBusiness(int businessId);
+        Task<CustomResult<GetBusinessDTO>> GetBusiness();
+        Task<CustomResult<bool>> DoesUserHasBusiness();
     }
 }

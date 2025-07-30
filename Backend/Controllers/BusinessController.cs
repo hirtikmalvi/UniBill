@@ -32,18 +32,21 @@ namespace UniBill.Controllers
         }
 
         [HttpGet("profile")]
-        public async Task<IActionResult> GetBusinessById(int businessId)
+        public async Task<IActionResult> GetBusinessById()
         {
-            if (businessId <= 0)
-            {
-                return BadRequest(CustomResult<RegisterBusinessResponseDTO>.Fail("Could not get Business.", new List<string>
-                {
-                    $"Business does not exists for BusinessId: {businessId}"
-                }));
-            }
-            var result = await businessService.GetBusiness(businessId);
+            var result = await businessService.GetBusiness();
             if (!result.Success)
             {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+
+        [HttpGet("has-business")]
+        public async Task<IActionResult> DoesUserHasBusiness()
+        {
+            var result = await businessService.DoesUserHasBusiness();
+            if (!result.Success) {
                 return BadRequest(result);
             }
             return Ok(result);

@@ -4,9 +4,6 @@ namespace UniBill.DTOs.BusinessDTOs
 {
     public class RegisterBusinessDTO
     {
-        [Required(ErrorMessage = "UserId is required.")]
-        public int UserId { get; set; }
-
         [Required(ErrorMessage = "BusinessTypeId is required.")]
         public int BusinessTypeId { get; set; }
 
@@ -29,7 +26,7 @@ namespace UniBill.DTOs.BusinessDTOs
         [RegularExpression(@"^[a-zA-Z0-9\s\-]{1,100}$", ErrorMessage = "Landmark Can Only Contain AlphaNumeric Characters (a-zA-Z0-9).")]
         public string? Landmark { get; set; }
 
-        [RegularExpression(@"^[a-zA-Z0-9\s\-]{1,100}$", ErrorMessage = "Landmark Can Only Contain AlphaNumeric Characters (a-zA-Z0-9).")]
+        [RegularExpression(@"^[a-zA-Z0-9\s\-]{1,100}$", ErrorMessage = "Road Can Only Contain AlphaNumeric Characters (a-zA-Z0-9).")]
         public string? Road { get; set; }
 
         [Required(ErrorMessage = "City is required.")]

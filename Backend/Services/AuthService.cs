@@ -15,7 +15,7 @@ using UniBill.Services.IServices;
 
 namespace UniBill.Services
 {
-    public class AuthService(AppDbContext context, IConfiguration configuration) : IAuthService
+    public class AuthService(AppDbContext context, ITokenService tokenService) : IAuthService
     {
         public async Task<CustomResult<RegistrationUserResponseDTO>> RegisterUser(RegisterUserDTO request)
         {
@@ -57,43 +57,16 @@ namespace UniBill.Services
                     "Invalid Credentials."
                 });
             }
-            if (user.Business == null)
-            {
-                return CustomResult<LoginResponseDTO>.Fail("Login Failed.", new List<string>
-                {
-                    "Create your business to login."
-                });
-            }
             var loginResponseDTO = new LoginResponseDTO
             {
                 RefreshToken = string.Empty,
-                AccessToken = GenerateJwtToken(user)
+                AccessToken = tokenService.GenerateJwtToken(user),
+                RequiresBusiness = user.Business == null
             };
-            return CustomResult<LoginResponseDTO>.Ok(loginResponseDTO, "Login Successful.");
-        }
-
-        public string GenerateJwtToken(User user)
-        {
-            var claims = new List<Claim>()
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim("BusinessId", user.Business.BusinessId.ToString()),
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration.GetValue<string>("AppSettings:Key")!));
-
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
-
-            var tokenDescriptor = new JwtSecurityToken(
-                issuer: configuration.GetValue<string>("AppSettings:Issuer"),
-                audience: configuration.GetValue<string>("AppSettings:Audience"),
-                expires: DateTime.Now.AddDays(3),
-                signingCredentials: creds,
-                claims: claims
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
+            string message = user.Business == null
+                            ? "Login successful, but no business found. Please register your business."
+                            : "Login successful.";
+            return CustomResult<LoginResponseDTO>.Ok(loginResponseDTO, message);
         }
     }
 }
