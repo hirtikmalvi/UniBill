@@ -1,0 +1,282 @@
+<div class="container mt-4">
+  <div class="mx-auto" style="max-width: 400px">
+    <div *ngIf="!hasBusiness; else hasNoBusiness">
+      <h2 class="text-center mb-4">Register Business</h2>
+      <form [formGroup]="registerBusinessForm" (ngSubmit)="onRegister()">
+        <!-- Business Details -->
+        <h5 class="mb-3">Business Details</h5>
+
+        <div class="mb-3">
+          <label for="businessType" class="form-label">Business Type</label>
+          <select
+            formControlName="businessTypeId"
+            id="businessType"
+            class="form-select"
+          >
+            <option [value]="0" selected>Select Business Type</option>
+            <option
+              *ngFor="let business of busienssTypes"
+              [value]="business.businessTypeId"
+            >
+              {{ business.businessTypeName }}
+            </option>
+          </select>
+          <div
+            *ngIf="
+              hasControlError('businessTypeId', 'required') ||
+              (registerBusinessForm.get('businessTypeId')?.touched &&
+                registerBusinessForm.get('businessTypeId')?.value == 0)
+            "
+            class="text-danger small mt-1"
+          >
+            Business Type is required.
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="businessName" class="form-label">Business Name</label>
+          <input
+            type="text"
+            formControlName="businessName"
+            id="businessName"
+            class="form-control"
+            placeholder="Enter Business Name"
+          />
+          <div
+            *ngIf="hasControlError('businessName', 'required')"
+            class="text-danger small mt-1"
+          >
+            Business Name is required.
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="phoneNo" class="form-label">Phone Number</label>
+          <input
+            type="text"
+            formControlName="phoneNo"
+            id="phoneNo"
+            class="form-control"
+            placeholder="Enter Phone Number"
+          />
+          <div
+            *ngIf="hasControlError('phoneNo', 'required')"
+            class="text-danger small mt-1"
+          >
+            Phone Number is required.
+          </div>
+          <div
+            *ngIf="hasControlError('phoneNo', 'pattern')"
+            class="text-danger small"
+          >
+            Phone Number must be 10 digits and cannot start with 0.
+          </div>
+        </div>
+
+        <!-- Business Address -->
+        <h5 class="mb-3 mt-4">Business Address</h5>
+
+        <div class="mb-3">
+          <label for="shopNo" class="form-label">Shop Number</label>
+          <input
+            type="text"
+            formControlName="shopNo"
+            id="shopNo"
+            class="form-control"
+            placeholder="Shop Number"
+          />
+          <div
+            *ngIf="hasControlError('shopNo', 'required')"
+            class="text-danger small mt-1"
+          >
+            Shop Number is required.
+          </div>
+          <div
+            *ngIf="hasControlError('shopNo', 'pattern')"
+            class="text-danger small"
+          >
+            Only alphanumeric characters and dash (-) allowed.
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="area" class="form-label">Area</label>
+          <input
+            type="text"
+            formControlName="area"
+            id="area"
+            class="form-control"
+            placeholder="Area"
+          />
+          <div
+            *ngIf="hasControlError('area', 'required')"
+            class="text-danger small mt-1"
+          >
+            Area is required.
+          </div>
+          <div
+            *ngIf="hasControlError('area', 'pattern')"
+            class="text-danger small"
+          >
+            Area can contain letters and numbers only.
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="landmark" class="form-label">Landmark</label>
+          <input
+            type="text"
+            formControlName="landmark"
+            id="landmark"
+            class="form-control"
+            placeholder="Landmark"
+          />
+          <div
+            *ngIf="hasControlError('landmark', 'pattern')"
+            class="text-danger small"
+          >
+            Landmark can contain alphanumeric characters only.
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="road" class="form-label">Road</label>
+          <input
+            type="text"
+            formControlName="road"
+            id="road"
+            class="form-control"
+            placeholder="Road"
+          />
+          <div
+            *ngIf="hasControlError('road', 'pattern')"
+            class="text-danger small"
+          >
+            Road can contain alphanumeric characters only.
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="city" class="form-label">City</label>
+          <input
+            type="text"
+            formControlName="city"
+            id="city"
+            class="form-control"
+            placeholder="City"
+          />
+          <div
+            *ngIf="hasControlError('city', 'required')"
+            class="text-danger small mt-1"
+          >
+            City is required.
+          </div>
+          <div
+            *ngIf="hasControlError('city', 'pattern')"
+            class="text-danger small"
+          >
+            City should contain letters only.
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="state" class="form-label">State</label>
+          <input
+            type="text"
+            formControlName="state"
+            id="state"
+            class="form-control"
+            placeholder="State"
+          />
+          <div
+            *ngIf="hasControlError('state', 'required')"
+            class="text-danger small mt-1"
+          >
+            State is required.
+          </div>
+          <div
+            *ngIf="hasControlError('state', 'pattern')"
+            class="text-danger small"
+          >
+            State should contain letters only.
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="country" class="form-label">Country</label>
+          <input
+            type="text"
+            formControlName="country"
+            id="country"
+            class="form-control"
+            placeholder="Country"
+          />
+          <div
+            *ngIf="hasControlError('country', 'required')"
+            class="text-danger small mt-1"
+          >
+            Country is required.
+          </div>
+          <div
+            *ngIf="hasControlError('country', 'pattern')"
+            class="text-danger small"
+          >
+            Country should contain letters only.
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="pinOrPostalCode" class="form-label"
+            >Pin/Postal Code</label
+          >
+          <input
+            type="text"
+            formControlName="pinOrPostalCode"
+            id="pinOrPostalCode"
+            class="form-control"
+            placeholder="Pin/Postal Code"
+          />
+          <div
+            *ngIf="hasControlError('pinOrPostalCode', 'required')"
+            class="text-danger small mt-1"
+          >
+            Pin/Postal Code is required.
+          </div>
+          <div
+            *ngIf="hasControlError('pinOrPostalCode', 'pattern')"
+            class="text-danger small"
+          >
+            Must contain exactly 6 digits.
+          </div>
+        </div>
+
+        <div class="text-center mt-4 mb-3">
+          <button
+            type="submit"
+            class="btn btn-primary w-100"
+            [disabled]="isProcessing"
+          >
+            <span *ngIf="!isProcessing; else spinner">Register</span>
+            <ng-template #spinner>
+              <app-spinner></app-spinner>
+            </ng-template>
+          </button>
+        </div>
+      </form>
+    </div>
+    <ng-template #hasNoBusiness>
+      <div class="text-center mt-5 mb-2">
+        <h4 class="text-success">You already have a registered business.</h4>
+        <p class="text-muted">
+          You can view and manage it by clicking the button below.
+        </p>
+        <a
+          [routerLink]="['/business/my-business']"
+          class="btn btn-secondary mt-3"
+        >
+          Go to My Business
+        </a>
+      </div>
+    </ng-template>
+  </div>
+</div>

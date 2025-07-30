@@ -1,0 +1,93 @@
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
+  <div class="container-fluid">
+    <a class="navbar-brand mb-0 h1 fs-2" routerLink="">UniBill</a>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0 fs-5">
+        <li class="nav-item">
+          <a
+            class="nav-link active"
+            routerLink="/dashboard"
+            aria-current="page"
+            routerLinkActive="active"
+            >Dashboard</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link active"
+            routerLink="/customers"
+            aria-current="page"
+            routerLinkActive="active"
+            >Customers</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link active"
+            routerLink="/bills"
+            aria-current="page"
+            routerLinkActive="active"
+            >Create Bill</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link active"
+            routerLink="/items"
+            aria-current="page"
+            routerLinkActive="active"
+            >Items</a
+          >
+        </li>
+        <li class="nav-item" *ngIf="!isValidUser">
+          <a
+            class="nav-link active"
+            routerLink="/auth/login"
+            aria-current="page"
+            routerLinkActive="active"
+            >Login</a
+          >
+        </li>
+        <li class="nav-item" *ngIf="!isValidUser">
+          <a
+            class="nav-link active"
+            routerLink="/auth/register"
+            aria-current="page"
+            routerLinkActive="active"
+            >Register</a
+          >
+        </li>
+        <li class="nav-item" *ngIf="isValidUser">
+          <a
+            class="nav-link active"
+            (click)="onBusinessClick()"
+            style="cursor: pointer"
+            aria-current="page"
+            routerLinkActive="active"
+            >Business</a
+          >
+        </li>
+        <li class="nav-item" *ngIf="isValidUser">
+          <a
+            style="cursor: pointer"
+            class="nav-link"
+            aria-current="page"
+            (click)="onLogout()"
+            >Logout</a
+          >
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

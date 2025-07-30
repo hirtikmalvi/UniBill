@@ -1,0 +1,21 @@
+/* Make full height for proper layout */
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* This makes the layout take full screen */
+}
+
+.content {
+  flex: 1; /* This takes up remaining space and pushes footer down */
+}
+
+.footer {
+  background-color: #f2f2f2;
+  text-align: center;
+}
