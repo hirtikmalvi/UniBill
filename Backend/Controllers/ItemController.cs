@@ -27,8 +27,6 @@ namespace UniBill.Controllers
                 return BadRequest(CustomResult<Item>.Fail("Could not create an Item.", errors));
             }
 
-            request.BusinessId = Convert.ToInt32(User.FindFirst("BusinessId")?.Value);
-
             var result = await itemService.CreateItem(request);
 
             if (!result.Success)
@@ -87,9 +85,8 @@ namespace UniBill.Controllers
                 return BadRequest(CustomResult<Item>.Fail("Could not update an item.", errors));
             }
 
-            itemToUpdate.BusinessId = Convert.ToInt32(User.FindFirst("BusinessId")?.Value);
-            
             var result = await itemService.UpdateItem(id, itemToUpdate);
+            
             if (!result.Success)
             {
                 return BadRequest(result);

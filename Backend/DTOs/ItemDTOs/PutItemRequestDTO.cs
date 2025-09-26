@@ -15,15 +15,12 @@ namespace UniBill.DTOs.ItemDTOs
         [Range(0, double.MaxValue, ErrorMessage = "ItemRate must be positive.")]
         public decimal ItemRate { get; set; }
 
-        [Required(ErrorMessage = "Category is required.")]
-        public int CategoryId { get; set; }
+        public int? CategoryId { get; set; }
 
         [Required(ErrorMessage = "Unit is required.")]
         public int UnitId { get; set; }
 
         [Required(ErrorMessage = "ItemType is required.")]
         public int ItemTypeId { get; set; }
-
-        public int? BusinessId { get; set; }
     }
 }

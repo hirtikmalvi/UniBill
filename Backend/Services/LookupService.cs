@@ -9,7 +9,7 @@ using UniBill.Models;
 
 namespace UniBill.Services.IServices
 {
-    public class LookupService(IHttpContextAccessor httpContextAccessor, AppDbContext context) : ILookupService
+    public class LookupService(CurrentUserContext currentUserContext, AppDbContext context) : ILookupService
     {
         public async Task<CustomResult<List<BusinessTypeDTO>>> GetBusinessTypes()
         {
@@ -43,15 +43,17 @@ namespace UniBill.Services.IServices
 
         public async Task<CustomResult<List<CategoryDTO>>> GetCategoriesByItemType(int itemTypeId)
         {
-            var categories = await context.Categories.Where(c => c.ItemTypeId == itemTypeId).Select(c => new CategoryDTO
+            var businessId = currentUserContext.BusinessId;
+            var business = await context.Businesses.Where(b => b.BusinessId == businessId).FirstOrDefaultAsync();
+            var categories = await context.AllowedCategories.Include(ac => ac.Category).Where(ac => ac.BusinessTypeId == business.BusinessTypeId && ac.Category.ItemTypeId == itemTypeId).Select(ac => new CategoryDTO
             {
-                CategoryId = c.CategoryId,
-                CategoryName = c.CategoryName,
+                CategoryId = ac.CategoryId,
+                CategoryName = ac.Category.CategoryName
             }).ToListAsync();
 
             if (categories.Count == 0)
             {
-                return CustomResult<List<CategoryDTO>>.Ok(categories, "Category fetched successfully and found No Item Types.");
+                return CustomResult<List<CategoryDTO>>.Ok(categories, "Category fetched successfully and no categories found.");
             }
             return CustomResult<List<CategoryDTO>>.Ok(categories, "Category fetched successfully.");
         }
@@ -73,8 +75,7 @@ namespace UniBill.Services.IServices
 
         public async Task<CustomResult<List<ItemTypeDTO>>> GetItemTypesByBusiness()
         {
-            var user = httpContextAccessor.HttpContext?.User;
-            var businessId = Convert.ToInt32(user.FindFirst("BusinessId")?.Value);
+            var businessId = currentUserContext.BusinessId;
 
             var itemsTypes = await context.Businesses.Where(b => b.BusinessId == businessId).Select(b => context.AllowedItemTypes.Where(ait => ait.BusinessTypeId == b.BusinessTypeId).Include(ait => ait.ItemType).Select(ait => new ItemTypeDTO
             {
@@ -107,8 +108,7 @@ namespace UniBill.Services.IServices
 
         public async Task<CustomResult<List<UnitDTO>>> GetUnitsByBusiness()
         {
-            var user = httpContextAccessor.HttpContext?.User;
-            var businessId = Convert.ToInt32(user.FindFirst("BusinessId")?.Value);
+            var businessId = currentUserContext.BusinessId;
 
             var businessType = await context.Businesses.FirstOrDefaultAsync(b => b.BusinessId == businessId);
 

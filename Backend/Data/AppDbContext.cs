@@ -26,6 +26,11 @@ namespace UniBill.Data
                 ait.ItemTypeId
             });
             modelBuilder.Entity<Category>().HasKey(c => c.CategoryId);
+            modelBuilder.Entity<AllowedCategories>().HasKey(ac => new
+            {
+                ac.CategoryId,
+                ac.BusinessTypeId
+            });
             modelBuilder.Entity<Item>().HasKey(i => i.ItemId);
             modelBuilder.Entity<Customer>().HasKey(c => c.CustomerId);
             modelBuilder.Entity<Bill>().HasKey(b => b.BillId);
@@ -80,6 +85,7 @@ namespace UniBill.Data
         public DbSet<ItemType> ItemTypes { get; set; }
         public DbSet<AllowedItemType> AllowedItemTypes { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<AllowedCategories> AllowedCategories { get; set; }
         public DbSet<Item> Items { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Bill> Bills { get; set; }

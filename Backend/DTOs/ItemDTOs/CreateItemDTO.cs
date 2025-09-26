@@ -18,11 +18,6 @@ namespace UniBill.DTOs.ItemDTOs
 
         [Required(ErrorMessage = "ItemType is required.")]
         public int ItemTypeId { get; set; }
-
-        //[Required(ErrorMessage = "Business is required.")]
-        public int? BusinessId { get; set; }
-
-        [Required(ErrorMessage = "Category is required.")]
-        public int CategoryId { get; set; }
+        public int? CategoryId { get; set; }
     }
 }

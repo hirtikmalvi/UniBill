@@ -9,22 +9,22 @@ using UniBill.Services.IServices;
 
 namespace UniBill.Services
 { 
-    public class ItemService(AppDbContext context) : IItemService
+    public class ItemService(AppDbContext context, CurrentUserContext currentUserContext) : IItemService
     {
         public async Task<CustomResult<GetItemDTO>> CreateItem(CreateItemDTO request)
         {
-            if (!(await context.Businesses.AnyAsync(bt => bt.BusinessId == request.BusinessId)))
+            if (!(await context.Businesses.AnyAsync(bt => bt.BusinessId == currentUserContext.BusinessId)))
             {
                 return CustomResult<GetItemDTO>.Fail("Item creation failed.", new List<string>
                 {
-                    $"Business for BusinessId: {request.BusinessId} does not exists."
+                    $"Business for BusinessId: {currentUserContext.BusinessId} does not exists."
                 });
             }
-            if (!(await context.Items.AnyAsync(i => i.BusinessId == request.BusinessId)))
+            if (!(await context.Items.AnyAsync(i => i.BusinessId == currentUserContext.BusinessId)))
             {
                 return CustomResult<GetItemDTO>.Fail("Item creation failed.", new List<string>
                 {
-                    $"Business for BusinessId: {request.BusinessId} does not exists."
+                    $"Business for BusinessId: {currentUserContext.BusinessId} does not exists."
                 });
             }
             if (!(await context.Units.AnyAsync(u => u.UnitId == request.UnitId)))
@@ -55,7 +55,7 @@ namespace UniBill.Services
             item.ItemRate = request.ItemRate;
             item.UnitId = request.UnitId;
             item.ItemTypeId = request.ItemTypeId;
-            item.BusinessId = (int)request.BusinessId!;
+            item.BusinessId = currentUserContext.BusinessId;
             item.CategoryId = request.CategoryId;
 
             var addedItem = await context.Items.AddAsync(item);
@@ -197,11 +197,11 @@ namespace UniBill.Services
                     $"ItemType for ItemTypeId: {itemToUpdate.ItemTypeId} does not exists."
                 });
             }
-            if (!(await context.Businesses.AnyAsync(bt => bt.BusinessId == itemToUpdate.BusinessId)))
+            if (!(await context.Businesses.AnyAsync(bt => bt.BusinessId == currentUserContext.BusinessId)))
             {
                 return CustomResult<GetItemDTO>.Fail("Item creation failed.", new List<string>
                 {
-                    $"Business for BusinessId: {itemToUpdate.BusinessId} does not exists."
+                    $"Business for BusinessId: {currentUserContext.BusinessId} does not exists."
                 });
             }
             if (itemToUpdate.CategoryId != null && !(await context.Categories.AnyAsync(c => c.CategoryId == itemToUpdate.CategoryId)))
@@ -220,7 +220,7 @@ namespace UniBill.Services
                 CategoryId = itemToUpdate.CategoryId,
                 UnitId = itemToUpdate.UnitId,
                 ItemTypeId = itemToUpdate.ItemTypeId,
-                BusinessId = (int)itemToUpdate.BusinessId!,
+                BusinessId = currentUserContext.BusinessId,
             };
             context.Items.Update(item);
             await context.SaveChangesAsync();
