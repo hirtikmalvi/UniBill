@@ -1,0 +1,133 @@
+<div class="my-1">
+  <form [formGroup]="itemForm" (ngSubmit)="onSubmit()" novalidate>
+    <div class="row g-3">
+      <!-- Item Name -->
+      <div class="col-12 col-md-6">
+        <label for="itemName" class="form-label">Item Name</label>
+        <input
+          type="text"
+          class="form-control"
+          id="itemName"
+          placeholder="Enter item name"
+          formControlName="itemName"
+        />
+        <div
+          class="form-text text-danger"
+          *ngIf="hasControlError('itemName', 'required')"
+        >
+          Item Name is required.
+        </div>
+        <div
+          class="form-text text-danger"
+          *ngIf="
+            hasControlError('itemName', 'minlength') ||
+            hasControlError('itemName', 'maxlength')
+          "
+        >
+          Item name length must be between 1-200 characters.
+        </div>
+      </div>
+
+      <!-- Item Rate -->
+      <div class="col-12 col-md-6">
+        <label for="itemRate" class="form-label">Item Rate</label>
+        <input
+          type="number"
+          step="0.01"
+          class="form-control"
+          id="itemRate"
+          placeholder="Enter rate"
+          formControlName="itemRate"
+        />
+        <div
+          class="form-text text-danger"
+          *ngIf="hasControlError('itemRate', 'required')"
+        >
+          Item Rate is required.
+        </div>
+        <div
+          class="form-text text-danger"
+          *ngIf="hasControlError('itemRate', 'min')"
+        >
+          Item Rate must be positive.
+        </div>
+      </div>
+
+      <!-- Unit -->
+      <div class="col-12 col-md-6">
+        <label for="units" class="form-label">Unit</label>
+        <select class="form-select" id="units" formControlName="unitId">
+          <option value="0">Select Unit</option>
+          <option *ngFor="let unit of units" [value]="unit.unitId">
+            {{ unit.unitName }} ({{ unit.unitShortName }})
+          </option>
+        </select>
+        <div
+          class="form-text text-danger"
+          *ngIf="
+            hasControlError('unitId', 'required') ||
+            (itemForm.get('unitId')?.touched &&
+              itemForm.get('unitId')?.value == 0)
+          "
+        >
+          Unit is required.
+        </div>
+      </div>
+
+      <!-- Item Type -->
+      <div class="col-12 col-md-6">
+        <label for="itemTypeId" class="form-label">Item Type</label>
+        <select
+          class="form-select"
+          id="itemTypeId"
+          formControlName="itemTypeId"
+        >
+          <option value="0">Select Item Type</option>
+          <option
+            *ngFor="let itemType of itemTypes"
+            [value]="itemType.itemTypeId"
+          >
+            {{ itemType.itemType }}
+          </option>
+        </select>
+        <div
+          class="form-text text-danger"
+          *ngIf="
+            hasControlError('itemTypeId', 'required') ||
+            (itemForm.get('itemTypeId')?.touched &&
+              itemForm.get('itemTypeId')?.value == 0)
+          "
+        >
+          Item Type is required.
+        </div>
+      </div>
+
+      <!-- Category -->
+      <div class="col-12 col-md-6">
+        <label for="categoryId" class="form-label">Category (Optional)</label>
+        <select
+          class="form-select"
+          id="categoryId"
+          formControlName="categoryId"
+        >
+          <option value="0">Select Category</option>
+          <option
+            *ngFor="let category of categories"
+            [value]="category.categoryId"
+          >
+            {{ category.categoryName }}
+          </option>
+        </select>
+        <div
+          class="form-text text-warning"
+          *ngIf="
+            itemForm.get('itemTypeId')?.touched &&
+            itemForm.get('itemTypeId')?.value > 0
+          "
+        >
+          You can select a category (optional).
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

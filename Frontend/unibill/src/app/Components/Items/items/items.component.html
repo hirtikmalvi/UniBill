@@ -1,0 +1,196 @@
+<div class="container my-4">
+  <!-- CreateItem Modal -->
+  <div
+    class="modal fade"
+    id="createItemModal"
+    tabindex="-1"
+    aria-labelledby="createItemModalLabel"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="createItemModalLabel">
+            Create New Item
+          </h1>
+          <button
+            type="button"
+            (click)="closeCreateItemModal()"
+            class="btn-close"
+            aria-label="Close"
+            [disabled]="createItemComponent.isProcessing"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <app-create-item
+            (itemCreated)="handleItemCreated()"
+            #createItemComponent
+          ></app-create-item>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="closeCreateItemModal()"
+            [disabled]="createItemComponent.isProcessing"
+          >
+            <span
+              class="content-wrapper d-flex justify-content-center align-items-center"
+              style="min-width: 35px"
+            >
+              Close
+            </span>
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary d-flex align-items-center justify-content-center"
+            (click)="onSaveChanges_CreateItem()"
+            [disabled]="createItemComponent.isProcessing"
+          >
+            <span
+              class="content-wrapper d-flex justify-content-center align-items-center"
+            >
+              <ng-container
+                *ngIf="createItemComponent.isProcessing; else saveText"
+              >
+                <app-spinner></app-spinner>
+              </ng-container>
+              <ng-template #saveText>Save changes</ng-template>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EditItem Modal -->
+  <div
+    class="modal fade"
+    id="editItemModal"
+    tabindex="-1"
+    aria-labelledby="editItemModalLabel"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="editItemModalLabel">Edit Item</h1>
+          <button
+            type="button"
+            (click)="closeEditItemModal()"
+            class="btn-close"
+            aria-label="Close"
+            [disabled]="editItemComponent.isProcessing"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <app-edit-item
+            [itemId]="selectedItemToEdit"
+            (itemEdited)="handleItemEdited()"
+            #editItemComponent
+          ></app-edit-item>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="closeEditItemModal()"
+            [disabled]="editItemComponent.isProcessing"
+          >
+            <span
+              class="content-wrapper d-flex justify-content-center align-items-center"
+              style="min-width: 35px"
+            >
+              Close
+            </span>
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary d-flex align-items-center justify-content-center"
+            (click)="onSaveChanges_EditItem()"
+            [disabled]="editItemComponent.isProcessing"
+          >
+            <span
+              class="content-wrapper d-flex justify-content-center align-items-center"
+            >
+              <ng-container
+                *ngIf="editItemComponent.isProcessing; else saveText"
+              >
+                <app-spinner></app-spinner>
+              </ng-container>
+              <ng-template #saveText>Save changes</ng-template>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">📦 Items</h3>
+    <button
+      class="btn btn-primary"
+      data-bs-toggle="modal"
+      data-bs-target="#createItemModal"
+    >
+      ➕ Create Item
+    </button>
+  </div>
+
+  <div *ngIf="!isProcessing; else spinner">
+    <div *ngIf="result?.success && result?.data?.length; else noItems">
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <div class="col" *ngFor="let item of result.data">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title fw-bold">{{ item.itemName }}</h5>
+              <p class="card-text mb-1">
+                <strong>Rate:</strong> {{ item.itemRate | currency : "INR" }}
+              </p>
+              <p class="card-text mb-1">
+                <strong>Category:</strong>
+                {{ item?.category ?? "Not Available" }}
+              </p>
+              <p class="card-text mb-1">
+                <strong>Unit:</strong> {{ item.unit }} ({{
+                  item.unitShortName
+                }})
+              </p>
+              <p class="card-text">
+                <strong>Item Type:</strong> {{ item.itemType }}
+              </p>
+            </div>
+            <div
+              class="card-footer bg-white border-top-0 d-flex justify-content-evenly gap-2"
+            >
+              <!-- ✏️ Edit -->
+              <!-- <button class="btn btn-sm btn-warning"></button> -->
+              <button
+                class="btn btn-sm btn-warning"
+                data-bs-toggle="modal"
+                data-bs-target="#editItemModal"
+                (click)="onEditItem(item.itemId)"
+              >
+                ✏️ Edit
+              </button>
+              <button
+                class="btn btn-sm btn-danger"
+                (click)="onDeleteItem(item)"
+              >
+                🗑️ Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noItems>
+      <div class="alert alert-info fs-5 text-center mt-5">
+        No items found. Create your first item now.
+      </div>
+    </ng-template>
+  </div>
+
+  <ng-template #spinner>
+    <app-spinner></app-spinner>
+  </ng-template>
+</div>

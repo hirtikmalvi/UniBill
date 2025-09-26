@@ -8,6 +8,10 @@ import { ErrorComponent } from './Components/error/error.component';
 import { AuthComponent } from './Components/Auth/auth/auth.component';
 import { validateUserGuard } from './Guards/User/validate-user.guard';
 import { hasBusinessGuard } from './Guards/Business/has-business.guard';
+import { ItemsComponent } from './Components/Items/items/items.component';
+import { CreateItemComponent } from './Components/Items/create-item/create-item.component';
+import { EditItemComponent } from './Components/Items/edit-item/edit-item.component';
+import { ItemComponent } from './Components/Items/item/item.component';
 
 export const routes: Routes = [
   {
@@ -51,6 +55,25 @@ export const routes: Routes = [
         path: '',
         redirectTo: 'my-business',
         pathMatch: 'full',
+      },
+    ],
+  },
+  {
+    path: 'items',
+    canActivate: [validateUserGuard, hasBusinessGuard],
+    component: ItemsComponent,
+    children: [
+      {
+        path: 'create-item',
+        component: CreateItemComponent,
+      },
+      {
+        path: ':id',
+        component: ItemComponent,
+      },
+      {
+        path: ':id/edit',
+        component: EditItemComponent,
       },
     ],
   },
