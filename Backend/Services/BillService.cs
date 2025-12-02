@@ -13,20 +13,13 @@ namespace UniBill.Services
     //POST    /api/bills
     //GET     /api/bills
     //GET     /api/bills/{id}
-    public class BillService(IHttpContextAccessor httpContextAccessor, AppDbContext context) : IBillService
+    //PUT     /api/bills/{id}/status
+    //DELETE  /api/bills/{id}
+    public class BillService(CurrentUserContext currentUserContext, AppDbContext context) : IBillService
     {
         public async Task<CustomResult<CreateBillResponseDTO>> CreateBill(CreateBillDTO request)
         {
-            var user = httpContextAccessor.HttpContext?.User;
-            var businessId = Convert.ToInt32(user.FindFirst("BusinessId")?.Value);
-
-
-            if (request.BusinessId != null && businessId != request.BusinessId)
-            {
-                return CustomResult<CreateBillResponseDTO>.Fail("Could not create bill.", [
-                    $"BusinessId mismatch."
-                ]);
-            }
+            var businessId = currentUserContext.BusinessId;
 
             if (!(await context.Businesses.AnyAsync(b => b.BusinessId == businessId)))
             {
@@ -83,10 +76,10 @@ namespace UniBill.Services
 
         public async Task<CustomResult<List<GetAllBillResponseDTO>>> GetAllBills()
         {
-            var user = httpContextAccessor.HttpContext?.User;
-            var businessId = Convert.ToInt32(user.FindFirst("BusinessId")?.Value);
+            var businessId = currentUserContext.BusinessId;
 
-            var bills = await context.Bills.Where(b => b.BusinessId == businessId).Include(b => b.BillItems).Select(b => new GetAllBillResponseDTO
+            var bills = await context.Bills.Where(b => 
+            !b.IsDeleted && b.BusinessId == businessId).Include(b => b.BillItems).Select(b => new GetAllBillResponseDTO
             {
                 BillId = b.BillId,
                 CustomerId = b.CustomerId,
@@ -108,11 +101,10 @@ namespace UniBill.Services
 
         public async Task<CustomResult<GetBillDTO>> GetBillById(int billId)
         {
-            var user = httpContextAccessor.HttpContext?.User;
-            var businessId = Convert.ToInt32(user.FindFirst("BusinessId")?.Value);
+            var businessId = currentUserContext.BusinessId;
 
-            // var bill = await context.Bills.FirstOrDefaultAsync(b => b.BusinessId == businessId && b.BillId == billId);
-            var bill = await context.Bills.Where(b => b.BusinessId == businessId && b.BillId == billId)
+            var bill = await context.Bills.Where(b => 
+            !b.IsDeleted && b.BusinessId == businessId && b.BillId == billId)
                              .Include(b => b.Customer)
                              .Include(b => b.BillItems)
                                 .ThenInclude(bi => bi.Item)
@@ -155,20 +147,88 @@ namespace UniBill.Services
                     Total = bi.Total,
                     Item = new GetItemDTO
                     {
-                        ItemId = bi.Item.ItemId,
-                        ItemName = bi.Item.ItemName,
-                        ItemRate = bi.Item.ItemRate,
-                        CategoryId = bi.Item.CategoryId,
-                        Category = bi.Item.Category.CategoryName,
-                        UnitId = bi.Item.UnitId,
-                        Unit = bi.Item.Unit.UnitName,
-                        UnitShortName = bi.Item.Unit.ShortUnitName,
-                        ItemTypeId = bi.Item.ItemTypeId,
-                        ItemType = bi.Item.ItemType.Name
+                        ItemId = bi.Item?.ItemId ?? 0,
+                        ItemName = bi.Item?.ItemName ?? "(Deleted Item)",
+                        ItemRate = bi.Item?.ItemRate ?? bi.Rate,
+                        CategoryId = bi.Item?.CategoryId ?? 0,
+                        Category = bi.Item?.Category?.CategoryName ?? "N/A",
+                        UnitId = bi.Item?.UnitId ?? 0,
+                        Unit = bi.Item?.Unit?.UnitName ?? "N/A",
+                        UnitShortName = bi.Item?.Unit?.ShortUnitName ?? "",
+                        ItemTypeId = bi.Item?.ItemTypeId ?? 0,
+                        ItemType = bi.Item?.ItemType?.Name ?? "N/A"
                     }
                 }).ToList()
             };
             return CustomResult<GetBillDTO>.Ok(billToReturn, "Bill fetched successfully.");
+        }
+
+        public async Task<CustomResult<string>> UpdateBillStatus(int billId, UpdateBillStatusDTO request)
+        {
+            var businessId = currentUserContext.BusinessId;
+
+            var bill = await context.Bills.FirstOrDefaultAsync(b => b.BillId == billId && b.BusinessId == businessId);
+
+            if (bill == null)
+            {
+                return CustomResult<string>.Fail("Could not get the  bill.", [
+                    $"Bill does not exist for BillId: {billId}."
+                ]);
+            }
+
+            var status = await context.BillStatuses.FirstOrDefaultAsync(bs => bs.StatusId ==  billId);
+
+            if(status == null)
+            {
+                return CustomResult<string>.Fail("Invalid Status.", ["Provided status does not exist."]);
+            }
+
+            bill.StatusId = status.StatusId;
+
+            if (request.PaymentModeId.HasValue)
+            {
+                var paymentMode = await context.PaymentModes.FirstOrDefaultAsync(pm => pm.PaymentModeId == request.PaymentModeId);
+
+                if (paymentMode == null)
+                {
+                    return CustomResult<string>.Fail("Invalid Payment Mode.", ["Provided Payment Mode does not exist."]);
+                }
+                bill.PaymentModeId = request.PaymentModeId;
+            }
+            if(request.PaidAmount.HasValue) bill.PaidAmount = request.PaidAmount;
+            if(request.PaymentDate.HasValue) bill.PaymentDate = request.PaymentDate;
+            if(!string.IsNullOrWhiteSpace(request.Notes?.Trim())) bill.Notes = request.Notes;
+
+            // If status is Paid, set PaidAmount to finalTotal if not provided
+            if (request.StatusId == 2) // StatusId = 2 means paid
+            {
+                if (!bill.PaidAmount.HasValue)
+                {
+                    bill.PaidAmount = bill.FinalAmount;
+                }
+                if (!bill.PaymentDate.HasValue)
+                {
+                    bill.PaymentDate = DateTime.Now;
+                }
+            }
+            await context.SaveChangesAsync();
+            return CustomResult<string>.Ok("Bill Updated.", "Bill status has been updated successfully.");
+        }
+        public async Task<CustomResult<string>> DeleteBillById(int billId)
+        {
+            var businessId = currentUserContext.BusinessId;
+            
+            var bill = await context.Bills.FirstOrDefaultAsync(b => b.BusinessId == businessId && b.BillId == billId);
+            if (bill == null)
+            {
+                return CustomResult<string>.Fail("Could not get the  bill.", [
+                    $"Bill does not exist for BillId: {billId}."
+                ]);
+            }
+            bill.IsDeleted = true;
+            bill.DeletedAt = DateTime.Now;
+            await context.SaveChangesAsync();
+            return CustomResult<string>.Ok("Bill Deleted.", "Bill has been deleted.");
         }
     }
 }

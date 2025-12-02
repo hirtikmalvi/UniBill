@@ -53,5 +53,28 @@ namespace UniBill.Controllers
             }
             return Ok(result);
         }
+
+        [HttpPut("{id}/status")]
+        public async Task<IActionResult> UpdateBillStatus([FromRoute] int id, [FromBody] UpdateBillStatusDTO request)
+        {
+            var result = await billService.UpdateBillStatus(id, request);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteBillById(int id)
+        {
+            var result = await billService.DeleteBillById(id);
+            
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
     }
 }
