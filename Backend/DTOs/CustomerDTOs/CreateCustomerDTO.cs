@@ -9,10 +9,9 @@ public class CreateCustomerDTO
     public string CustomerName { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Mobile Number is required.")]
-    [RegularExpression(@"^[^0-2]{1}[1-9]{9}$", ErrorMessage = "Phone Number cannot start with 0, 1, 2 and must contain 10 digits only.")]
+    [RegularExpression(@"^[^0-2]{1}[0-9]{9}$", ErrorMessage = "Phone Number cannot start with 0, 1, 2 and must contain 10 digits only.")]
     public string MobileNumber { get; set; }
 
     [EmailAddress(ErrorMessage = "Email must be in valid format.")]
     public string? Email { get; set; }
-    public int? BusinessId { get; set; }
 }

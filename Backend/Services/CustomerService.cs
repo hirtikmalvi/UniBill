@@ -8,21 +8,12 @@ using UniBill.Services.IServices;
 
 namespace UniBill.Services;
 
-public class CustomerService(IHttpContextAccessor httpContextAccessor, AppDbContext context) : ICustomerService
+public class CustomerService(AppDbContext context, CurrentUserContext currentUserContext) : ICustomerService
 {
     public async Task<CustomResult<GetCustomerDTO>> CreateCustomer(CreateCustomerDTO request)
     {
-        var user = httpContextAccessor.HttpContext?.User;
-        var businessId = Convert.ToInt32(user?.FindFirst("BusinessId")?.Value);
-
-        if (request.BusinessId != null && businessId != request.BusinessId)
-        {
-            return CustomResult<GetCustomerDTO>.Fail("Could not create Customer.", new List<string>
-            {
-                $"BusinessId mismatch in request."
-            });
-        }
-
+        var businessId = currentUserContext.BusinessId;
+        
         var customer = await context.Customers.Where(c => c.Business.BusinessId == businessId && c.MobileNumber == request.MobileNumber).FirstOrDefaultAsync();
 
         if (customer != null)
@@ -58,8 +49,7 @@ public class CustomerService(IHttpContextAccessor httpContextAccessor, AppDbCont
 
     public async Task<CustomResult<List<GetCustomerDTO>>> GetAllCustomers()
     {
-        var user = httpContextAccessor.HttpContext?.User;
-        var businessId = Convert.ToInt32(user?.FindFirst("BusinessId")?.Value);
+        var businessId = currentUserContext.BusinessId;
 
         if (!(await context.Customers.AnyAsync(c => c.BusinessId == businessId)))
         {
@@ -82,9 +72,8 @@ public class CustomerService(IHttpContextAccessor httpContextAccessor, AppDbCont
 
     public async Task<CustomResult<GetCustomerDTO>> GetCustomerById(int id)
     {
-        var user = httpContextAccessor.HttpContext?.User;
-        var businessId = Convert.ToInt32(user?.FindFirst("BusinessId")?.Value);
-
+        var businessId = currentUserContext.BusinessId;
+        
         var customer = await context.Customers.FirstOrDefaultAsync(c => c.BusinessId == businessId && c.CustomerId == id);
 
         if (customer == null)
@@ -105,8 +94,7 @@ public class CustomerService(IHttpContextAccessor httpContextAccessor, AppDbCont
     
     public async Task<CustomResult<GetCustomerDTO>> GetCustomerByMobileNumber(string mobileNumber)
     {
-        var user = httpContextAccessor.HttpContext?.User;
-        var businessId = Convert.ToInt32(user?.FindFirst("BusinessId")?.Value);
+        var businessId = currentUserContext.BusinessId;
 
         var customer = await context.Customers.FirstOrDefaultAsync(c => c.BusinessId == businessId && c.MobileNumber == mobileNumber);
 
