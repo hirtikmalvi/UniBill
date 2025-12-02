@@ -24,7 +24,6 @@ namespace UniBill.DTOs.BillDTOs
         [Range(0, double.MaxValue, ErrorMessage = " Labour Charges cannot be negative.")]
         [DefaultValue(0)]
         public decimal? LabourCharges { get; set; }
-        public int? BusinessId { get; set; }
         public List<CreateBillItemDTO> BillItems { get; set; }
     }
 }
