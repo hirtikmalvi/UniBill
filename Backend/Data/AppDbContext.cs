@@ -74,6 +74,24 @@ namespace UniBill.Data
             modelBuilder.Entity<BusinessAddress>().Property(ba => ba.Road).IsRequired(false);
 
             modelBuilder.Entity<BillItem>().Property(bi => bi.Total).HasComputedColumnSql("[Rate] * [Quantity]");
+
+            modelBuilder.Entity<BillStatus>().HasKey(bs => bs.StatusId);
+            modelBuilder.Entity<PaymentMode>().HasKey(pm => pm.PaymentModeId);
+
+            modelBuilder.Entity<BillStatus>().HasData(
+                     new BillStatus { StatusId = 1, StatusName = "Pending" },
+                     new BillStatus { StatusId = 2, StatusName = "Paid" },
+                     new BillStatus { StatusId = 3, StatusName = "Partial" },
+                     new BillStatus { StatusId = 4, StatusName = "Cancelled" },
+                     new BillStatus { StatusId = 5, StatusName = "Refunded" }
+            );
+
+            modelBuilder.Entity<PaymentMode>().HasData(
+                new PaymentMode { PaymentModeId = 1, ModeName = "CASH" },
+                new PaymentMode { PaymentModeId = 2, ModeName = "UPI" },
+                new PaymentMode { PaymentModeId = 3, ModeName = "CARD" },
+                new PaymentMode { PaymentModeId = 4, ModeName = "BANK_TRANSFER" }
+            );
         }
 
         public DbSet<User> Users { get; set; }
@@ -90,5 +108,7 @@ namespace UniBill.Data
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Bill> Bills { get; set; }
         public DbSet<BillItem> BillItems { get; set; }
+        public DbSet<BillStatus> BillStatuses { get; set; }
+        public DbSet<PaymentMode> PaymentModes { get; set; }
     }
 }
