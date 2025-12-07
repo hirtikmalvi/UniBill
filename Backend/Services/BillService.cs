@@ -46,20 +46,34 @@ namespace UniBill.Services
                 ]);
             }
 
+            decimal subTotal = request.BillItems?.Sum(bi => bi.Rate * bi.Quantity) ?? 0;
+            decimal discountAmount = subTotal * (request.Discount ?? 0) / 100;
+            decimal taxAmount = subTotal * (request.Tax ?? 0) / 100;
+            decimal finalTotal = subTotal - discountAmount + taxAmount + (request.LabourCharges ?? 0);
+
             var bill = new Bill
             {
                 Date = DateTime.Now,
                 CustomerId = request.CustomerId,
-                Discount = request.Discount,
-                Tax = request.Tax,
-                LabourCharges = (decimal)request.LabourCharges!,
+                Discount = request.Discount ?? 0,
+                Tax = request.Tax ?? 0,
+                LabourCharges = request.LabourCharges ?? 0,
                 BusinessId = businessId,
+                // DEFAULTS (IMPORTANT)
+                StatusId = 1,
+                PaymentModeId = null,
+                PaidAmount = 0,
+                PaymentDate = null,
+                Notes = null,
+                IsDeleted = false,
+                DeletedAt = null,
                 BillItems = request.BillItems.Select(bi => new BillItem
                 {
                     ItemId = bi.ItemId,
                     Quantity = bi.Quantity,
                     Rate = bi.Rate
-                }).ToList()
+                }).ToList(),
+                FinalAmount = finalTotal
             };
 
             var addedBill = context.Bills.Add(bill).Entity;
@@ -79,7 +93,7 @@ namespace UniBill.Services
             var businessId = currentUserContext.BusinessId;
 
             var bills = await context.Bills.Where(b => 
-            !b.IsDeleted && b.BusinessId == businessId).Include(b => b.BillItems).Select(b => new GetAllBillResponseDTO
+            !b.IsDeleted && b.BusinessId == businessId).Include(b => b.BillItems).Include(b => b.Status).Include(b => b.PaymentMode).Select(b => new GetAllBillResponseDTO
             {
                 BillId = b.BillId,
                 CustomerId = b.CustomerId,
@@ -89,7 +103,13 @@ namespace UniBill.Services
                 SubTotal = b.BillItems.Sum(bi => bi.Rate * bi.Quantity),
                 Discount = (decimal)b.Discount!,
                 Tax = (decimal)b.Tax!,
-                LabourCharges = b.LabourCharges
+                LabourCharges = b.LabourCharges,
+                BillStatusId = b.StatusId,
+                BillStatus = b.Status.StatusName,
+                PaymentModeId = b.PaymentModeId,
+                PaymentMode = b.PaymentMode.ModeName,
+                PaymentDate = b.PaymentDate,
+                PaidAmount = b.PaidAmount
             }).ToListAsync();
 
             if (bills.Count == 0)
@@ -112,6 +132,8 @@ namespace UniBill.Services
                              .Include(b => b.BillItems)
                                 .ThenInclude(bi => bi.Item)
                                     .ThenInclude(i => i.ItemType)
+                             .Include(b => b.PaymentMode)
+                             .Include(b => b.Status)
                              .Include(b => b.BillItems)
                                 .ThenInclude(bi => bi.Item)
                                     .ThenInclude(i => i.Unit)
@@ -132,6 +154,15 @@ namespace UniBill.Services
                 Discount = bill.Discount,
                 Tax = bill.Tax,
                 LabourCharges = bill.LabourCharges,
+                StatusId = bill.StatusId,
+                StatusName = bill.Status?.StatusName ?? "",
+                PaymentModeId = bill.PaymentModeId,
+                PaymentModeName = bill.PaymentMode?.ModeName ?? "",
+                PaidAmount = bill.PaidAmount,
+                PaymentDate = bill.PaymentDate,
+                Notes = bill.Notes,
+                IsDeleted = bill.IsDeleted,
+                DeletedAt = bill.DeletedAt,
                 Customer = new GetCustomerDTO
                 {
                     CustomerId = bill.CustomerId,
@@ -167,53 +198,72 @@ namespace UniBill.Services
         {
             var businessId = currentUserContext.BusinessId;
 
-            var bill = await context.Bills.FirstOrDefaultAsync(b => b.BillId == billId && b.BusinessId == businessId);
+            var bill = await context.Bills
+                .FirstOrDefaultAsync(b => b.BillId == billId && b.BusinessId == businessId);
 
             if (bill == null)
-            {
-                return CustomResult<string>.Fail("Could not get the  bill.", [
-                    $"Bill does not exist for BillId: {billId}."
-                ]);
-            }
+                return CustomResult<string>.Fail("Could not get the bill.",
+                    [$"Bill does not exist for BillId: {billId}."]);
 
-            var status = await context.BillStatuses.FirstOrDefaultAsync(bs => bs.StatusId ==  billId);
+            var status = await context.BillStatuses
+                .FirstOrDefaultAsync(bs => bs.StatusId == request.StatusId);
 
-            if(status == null)
-            {
+            if (status == null)
                 return CustomResult<string>.Fail("Invalid Status.", ["Provided status does not exist."]);
-            }
 
             bill.StatusId = status.StatusId;
 
-            if (request.PaymentModeId.HasValue)
+            if (request.StatusId == 1 || request.StatusId == 4) // Pending || Cancelled
             {
-                var paymentMode = await context.PaymentModes.FirstOrDefaultAsync(pm => pm.PaymentModeId == request.PaymentModeId);
-
-                if (paymentMode == null)
-                {
-                    return CustomResult<string>.Fail("Invalid Payment Mode.", ["Provided Payment Mode does not exist."]);
-                }
-                bill.PaymentModeId = request.PaymentModeId;
+                bill.PaymentModeId = null;
+                bill.PaidAmount = null;
+                bill.PaymentDate = null;
             }
-            if(request.PaidAmount.HasValue) bill.PaidAmount = request.PaidAmount;
-            if(request.PaymentDate.HasValue) bill.PaymentDate = request.PaymentDate;
-            if(!string.IsNullOrWhiteSpace(request.Notes?.Trim())) bill.Notes = request.Notes;
-
-            // If status is Paid, set PaidAmount to finalTotal if not provided
-            if (request.StatusId == 2) // StatusId = 2 means paid
+            else if (request.StatusId == 2 || request.StatusId == 3 || request.StatusId == 5) // Paid || Partial || Refunded
             {
-                if (!bill.PaidAmount.HasValue)
+                if (request.PaymentModeId.HasValue && request.PaymentModeId > 0)
+                {
+                    var paymentMode = await context.PaymentModes
+                        .FirstOrDefaultAsync(pm => pm.PaymentModeId == request.PaymentModeId);
+
+                    if (paymentMode == null)
+                        return CustomResult<string>.Fail("Invalid Payment Mode.", ["Provided Payment Mode does not exist."]);
+
+                    bill.PaymentModeId = request.PaymentModeId;
+                }
+
+                if (request.StatusId == 2 && (!bill.PaidAmount.HasValue || bill.PaidAmount <= 0)) // Paid
                 {
                     bill.PaidAmount = bill.FinalAmount;
                 }
-                if (!bill.PaymentDate.HasValue)
+                else if (request.StatusId == 5) // Refunded
+                {
+                    bill.PaidAmount = 0;
+                }
+                else if (request.PaidAmount.HasValue) // Partial
+                {
+                    bill.PaidAmount = request.PaidAmount;
+                }
+
+                if (request.PaymentDate.HasValue)
+                {
+                    bill.PaymentDate = request.PaymentDate;
+                }
+                else
                 {
                     bill.PaymentDate = DateTime.Now;
                 }
             }
+
+            if (!string.IsNullOrWhiteSpace(request.Notes))
+                bill.Notes = request.Notes.Trim();
+
+
             await context.SaveChangesAsync();
+
             return CustomResult<string>.Ok("Bill Updated.", "Bill status has been updated successfully.");
         }
+
         public async Task<CustomResult<string>> DeleteBillById(int billId)
         {
             var businessId = currentUserContext.BusinessId;

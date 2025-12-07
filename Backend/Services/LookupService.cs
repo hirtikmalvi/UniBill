@@ -126,5 +126,25 @@ namespace UniBill.Services.IServices
             }
             return CustomResult<List<UnitDTO>>.Ok(units, "Units fetched successfully.");
         }
+        public async Task<CustomResult<List<BillStatus>>> GetBillStatuses()
+        {
+            var billStatuses = await context.BillStatuses.ToListAsync();
+
+            if (billStatuses.Count == 0)
+            {
+                return CustomResult<List<BillStatus>>.Ok(billStatuses, "No Bill Statuses found.");
+            }
+            return CustomResult<List<BillStatus>>.Ok(billStatuses, "Bill Statuses fetched successfully.");
+        }
+        public async Task<CustomResult<List<PaymentMode>>> GetPaymentModes()
+        {
+            var paymentModes = await context.PaymentModes.ToListAsync();
+
+            if (paymentModes.Count == 0)
+            {
+                return CustomResult<List<PaymentMode>>.Ok(paymentModes, "No Payment Modes found.");
+            }
+            return CustomResult<List<PaymentMode>>.Ok(paymentModes, "Payment Modes fetched successfully.");
+        }
     }
 }

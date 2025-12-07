@@ -65,5 +65,21 @@ namespace UniBill.Controllers
             var result = await lookupService.GetCategoriesByItemType(id);
             return Ok(result);
         }
+
+        [HttpGet("payment-modes")]
+        [Authorize]
+        public async Task<IActionResult> GetPaymentModes()
+        {
+            var result = await lookupService.GetPaymentModes();
+            return Ok(result);
+        }
+
+        [HttpGet("bill-statuses")]
+        [Authorize]
+        public async Task<IActionResult> GetBillStatuses()
+        {
+            var result = await lookupService.GetBillStatuses();
+            return Ok(result);
+        }
     }
 }
