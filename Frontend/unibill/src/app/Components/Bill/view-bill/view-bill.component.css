@@ -1,0 +1,16 @@
+@media print {
+  button,
+  .btn,
+  .container .btn,
+  .d-flex {
+    display: none !important;
+  }
+  .card {
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
+
+.mobile-item-card {
+  background: #fafafa;
+}

@@ -1,0 +1,371 @@
+<div class="container my-4">
+  <h3 class="mb-3 fw-bold"><i class="bi bi-plus-lg"></i> Create Bill</h3>
+
+  <!-- ===================== CUSTOMER SECTION ===================== -->
+  <div class="card shadow-sm mb-4 border-0 rounded-3">
+    <div class="card-body">
+      <h5 class="mb-3 fw-semibold">Customer Details</h5>
+
+      <!-- CUSTOMER FORM -->
+      <form [formGroup]="customerForm" (ngSubmit)="onAddCustomer()">
+        <div class="row g-3">
+          <!-- MOBILE INPUT -->
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-medium">Mobile Number</label>
+            <div class="position-relative">
+              <input
+                type="text"
+                maxlength="10"
+                class="form-control pe-5"
+                placeholder="Enter Mobile Number"
+                formControlName="mobileNumber"
+              />
+
+              <!-- CHECKMARK -->
+              <i
+                *ngIf="
+                  customerForm.get('mobileNumber')?.valid && doCustomerExists
+                "
+                class="bi bi-check-circle-fill text-success position-absolute top-50 end-0 translate-middle-y me-2 fs-5"
+              ></i>
+
+              <!-- CROSS ICON -->
+              <i
+                *ngIf="
+                  customerForm.get('mobileNumber')?.valid &&
+                  !doCustomerExists &&
+                  mobileIs10Digits
+                "
+                class="bi bi-x-circle-fill text-danger position-absolute top-50 end-0 translate-middle-y me-2 fs-5"
+              ></i>
+            </div>
+
+            <!-- VALIDATION -->
+            <div
+              class="text-danger small"
+              *ngIf="hasControlError(customerForm, 'mobileNumber', 'required')"
+            >
+              Mobile Number is required.
+            </div>
+
+            <div
+              class="text-danger small"
+              *ngIf="hasControlError(customerForm, 'mobileNumber', 'pattern')"
+            >
+              Mobile Number must be exactly 10 digits.
+            </div>
+          </div>
+
+          <!-- EXISTING CUSTOMER DETAILS -->
+          <div
+            class="col-12 mt-3"
+            *ngIf="mobileIs10Digits && doCustomerExists && customer?.data"
+          >
+            <div class="alert alert-success border-0 shadow-sm">
+              <strong>Customer Found ✔</strong><br />
+              Name: {{ customer.data?.customerName }} <br />
+              Mobile: {{ customer.data?.mobileNumber }} <br />
+              <span *ngIf="customer.data?.email"
+                >Email: {{ customer.data?.email }}</span
+              >
+            </div>
+          </div>
+
+          <!-- NEW CUSTOMER NAME -->
+          <div
+            class="col-12 col-md-6"
+            *ngIf="mobileIs10Digits && !doCustomerExists"
+          >
+            <label class="form-label fw-medium">Customer Name</label>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Enter Customer Name"
+              formControlName="customerName"
+            />
+
+            <div
+              class="text-danger small"
+              *ngIf="hasControlError(customerForm, 'customerName', 'required')"
+            >
+              Customer Name is required.
+            </div>
+          </div>
+
+          <!-- NEW CUSTOMER EMAIL -->
+          <div
+            class="col-12 col-md-6"
+            *ngIf="mobileIs10Digits && !doCustomerExists"
+          >
+            <label class="form-label fw-medium">Customer Email</label>
+            <input
+              type="email"
+              class="form-control"
+              placeholder="Enter Customer Email"
+              formControlName="customerEmail"
+            />
+
+            <div
+              class="text-danger small"
+              *ngIf="hasControlError(customerForm, 'customerEmail', 'email')"
+            >
+              Invalid email format.
+            </div>
+          </div>
+
+          <!-- ADD CUSTOMER BUTTON -->
+          <div
+            class="col-12 text-center"
+            *ngIf="mobileIs10Digits && !doCustomerExists"
+          >
+            <button
+              type="submit"
+              class="btn btn-primary px-4 mt-2"
+              [disabled]="isCustomerProcessing"
+            >
+              <ng-container *ngIf="!isCustomerProcessing; else custLoader">
+                Add Customer
+              </ng-container>
+
+              <ng-template #custLoader>
+                <app-spinner></app-spinner>
+              </ng-template>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================== BILL ITEMS SECTION (DISABLED IF NO CUSTOMER) ===================== -->
+  <div class="card shadow-sm border-0 rounded-3">
+    <div class="card-body">
+      <h5 class="mb-3 fw-semibold">Bill Items</h5>
+
+      <button
+        class="btn btn-success mb-3"
+        type="button"
+        (click)="addItemRow()"
+        [disabled]="billForm.get('customerId')?.value === 0"
+      >
+        <i class="bi bi-plus-lg"></i> Add Item
+      </button>
+
+      <!-- BILL FORM -->
+      <form [formGroup]="billForm" (ngSubmit)="onSubmit()">
+        <div formArrayName="billItems">
+          <div
+            *ngFor="let row of billItems.controls; let i = index"
+            [formGroupName]="i"
+            class="bill-item-box p-3 mb-3 border rounded-3 shadow-sm"
+          >
+            <div class="row g-2 align-items-end">
+              <!-- ITEM SEARCH -->
+              <div class="col-12">
+                <label class="form-label fw-medium">Item Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Search item..."
+                  formControlName="itemName"
+                  (input)="onItemSearch(i)"
+                />
+
+                <div
+                  class="text-danger small"
+                  *ngIf="hasControlError(row, 'itemName', 'required')"
+                >
+                  Item name is required.
+                </div>
+
+                <!-- AUTOCOMPLETE DROPDOWN -->
+                <div
+                  class="dropdown-box mt-1 p-2 rounded shadow-sm border bg-light"
+                  *ngIf="row.get('showDropdown')?.value"
+                >
+                  <!-- LOADER -->
+                  <div class="text-center py-2" *ngIf="isItemSearchProcessing">
+                    <app-spinner></app-spinner>
+                  </div>
+
+                  <!-- NO RESULTS -->
+                  <div
+                    *ngIf="
+                      !isItemSearchProcessing && filteredItems.length === 0
+                    "
+                    class="text-center text-muted py-2"
+                  >
+                    No items found
+                  </div>
+
+                  <!-- RESULTS -->
+                  <div *ngFor="let item of filteredItems">
+                    <div
+                      class="dropdown-item-custom"
+                      (click)="selectedItem(item, i)"
+                    >
+                      <div class="fw-semibold">{{ item.itemName }}</div>
+                      <small class="text-muted d-block">
+                        Unit: {{ item.unit }} ({{ item.unitShortName }}) |
+                        Category: {{ item.category ?? "N/A" }} | Item Type:
+                        {{ item.itemType }} | Rate:
+                        {{ item.itemRate | currency : "INR" }}
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- LITTLE INFO TAGS UNDER ITEM -->
+              <div class="col-12" *ngIf="row.get('itemId')?.value">
+                <div class="small text-muted">
+                  <strong>Unit:</strong> {{ row.get("unit")?.value }} |
+                  <strong>Category:</strong>
+                  {{ row.get("category")?.value ?? "N/A" }} |
+                  <strong>Type:</strong> {{ row.get("itemType")?.value }}
+                </div>
+              </div>
+
+              <!-- QUANTITY -->
+              <div class="col-6 col-md-3">
+                <label class="form-label fw-medium">Quantity</label>
+                <input
+                  type="number"
+                  class="form-control form-control-sm"
+                  formControlName="quantity"
+                  min="1"
+                  (input)="updateAmount(i)"
+                />
+                <div
+                  class="text-danger small"
+                  *ngIf="hasControlError(row, 'quantity', 'min')"
+                >
+                  Quantity must be at least 1.
+                </div>
+              </div>
+
+              <!-- RATE -->
+              <div class="col-6 col-md-3">
+                <label class="form-label fw-medium">Rate</label>
+                <input
+                  type="number"
+                  class="form-control form-control-sm"
+                  formControlName="rate"
+                  min="0"
+                  (input)="updateAmount(i)"
+                />
+              </div>
+
+              <!-- TOTAL -->
+              <div class="col-12 col-md-3">
+                <label class="form-label fw-medium">Total</label>
+                <input
+                  type="number"
+                  class="form-control form-control-sm"
+                  formControlName="total"
+                />
+              </div>
+
+              <!-- REMOVE BUTTON -->
+              <div class="col-12 col-md-3 d-flex align-items-end">
+                <button
+                  type="button"
+                  class="btn btn-danger btn-sm w-100"
+                  (click)="removeBillItem(i)"
+                >
+                  Remove Item
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BILL TOTALS (LIVE) -->
+        <div class="row g-3 mt-3 pt-3 border-top">
+          <div class="col-12 col-md-4">
+            <label class="form-label">Discount (%)</label>
+            <input
+              type="number"
+              class="form-control"
+              formControlName="discount"
+              min="0"
+              max="100"
+            />
+          </div>
+
+          <div class="col-12 col-md-4">
+            <label class="form-label">Tax (%)</label>
+            <input
+              type="number"
+              class="form-control"
+              formControlName="tax"
+              min="0"
+              max="100"
+            />
+          </div>
+
+          <div class="col-12 col-md-4">
+            <label class="form-label">Labour Charges</label>
+            <input
+              type="number"
+              class="form-control"
+              formControlName="labourCharges"
+              min="0"
+            />
+          </div>
+        </div>
+
+        <!-- LIVE TOTALS DISPLAY -->
+        <div class="card p-3 mt-3 shadow-sm border-0 bg-white">
+          <h6 class="fw-bold mb-3 small">Bill Summary</h6>
+
+          <div class="row g-2 small">
+            <div class="col-6">Subtotal:</div>
+            <div class="col-6 text-end">{{ subTotal | currency : "INR" }}</div>
+
+            <div class="col-6">
+              Discount ({{ billForm.get("discount")?.value }}%):
+            </div>
+            <div class="col-6 text-end text-danger">
+              - {{ discountAmount | currency : "INR" }}
+            </div>
+
+            <div class="col-6">Tax ({{ billForm.get("tax")?.value }}%):</div>
+            <div class="col-6 text-end text-success">
+              + {{ taxAmount | currency : "INR" }}
+            </div>
+
+            <div class="col-6">Labour Charges:</div>
+            <div class="col-6 text-end">
+              {{ billForm.get("labourCharges")?.value | currency : "INR" }}
+            </div>
+
+            <hr class="my-2" />
+
+            <div class="col-6"><strong class="fs-5">Final Total:</strong></div>
+            <div class="col-6 text-end">
+              <strong class="fs-5">{{ finalAmount | currency : "INR" }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBMIT BUTTON -->
+        <div class="text-center mt-4">
+          <button
+            class="btn btn-primary px-4 py-2"
+            type="submit"
+            [disabled]="billForm.get('customerId')?.value === 0 || isProcessing"
+          >
+            <ng-container *ngIf="!isProcessing; else billLoader">
+              Create Bill
+            </ng-container>
+
+            <ng-template #billLoader>
+              <app-spinner></app-spinner>
+            </ng-template>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

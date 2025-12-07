@@ -125,13 +125,13 @@
   </div>
 
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="mb-0">📦 Items</h3>
+    <h3 class="mb-0"><i class="bi bi-box-fill"></i> Items</h3>
     <button
       class="btn btn-primary"
       data-bs-toggle="modal"
       data-bs-target="#createItemModal"
     >
-      ➕ Create Item
+      <i class="bi bi-plus-lg"></i> Create Item
     </button>
   </div>
 
@@ -161,21 +161,19 @@
             <div
               class="card-footer bg-white border-top-0 d-flex justify-content-evenly gap-2"
             >
-              <!-- ✏️ Edit -->
-              <!-- <button class="btn btn-sm btn-warning"></button> -->
               <button
                 class="btn btn-sm btn-warning"
                 data-bs-toggle="modal"
                 data-bs-target="#editItemModal"
                 (click)="onEditItem(item.itemId)"
               >
-                ✏️ Edit
+                <i class="bi bi-pencil-fill"></i> Edit
               </button>
               <button
                 class="btn btn-sm btn-danger"
                 (click)="onDeleteItem(item)"
               >
-                🗑️ Delete
+                <i class="bi bi-trash3-fill"></i> Delete
               </button>
             </div>
           </div>

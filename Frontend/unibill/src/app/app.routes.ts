@@ -11,7 +11,11 @@ import { hasBusinessGuard } from './Guards/Business/has-business.guard';
 import { ItemsComponent } from './Components/Items/items/items.component';
 import { CreateItemComponent } from './Components/Items/create-item/create-item.component';
 import { EditItemComponent } from './Components/Items/edit-item/edit-item.component';
-import { ItemComponent } from './Components/Items/item/item.component';
+import { BillsComponent } from './Components/Bill/bills/bills.component';
+import { CreateBillComponent } from './Components/Bill/create-bill/create-bill.component';
+import { EditBillComponent } from './Components/Bill/edit-bill/edit-bill.component';
+import { ViewBillComponent } from './Components/Bill/view-bill/view-bill.component';
+import { CustomersComponent } from './Components/Customer/customers/customers.component';
 
 export const routes: Routes = [
   {
@@ -62,20 +66,33 @@ export const routes: Routes = [
     path: 'items',
     canActivate: [validateUserGuard, hasBusinessGuard],
     component: ItemsComponent,
+  },
+  {
+    path: 'bills',
+    canActivateChild: [validateUserGuard, hasBusinessGuard],
     children: [
       {
-        path: 'create-item',
-        component: CreateItemComponent,
+        path: '',
+        component: BillsComponent,
       },
       {
-        path: ':id',
-        component: ItemComponent,
+        path: 'create',
+        component: CreateBillComponent,
       },
       {
-        path: ':id/edit',
-        component: EditItemComponent,
+        path: ':billId/edit',
+        component: EditBillComponent,
+      },
+      {
+        path: ':billId/view',
+        component: ViewBillComponent,
       },
     ],
+  },
+  {
+    path: 'customers',
+    canActivate: [validateUserGuard, hasBusinessGuard],
+    component: CustomersComponent,
   },
   {
     path: 'error-page',

@@ -68,8 +68,8 @@ export class EditItemComponent implements OnChanges {
         Validators.maxLength(200),
       ]),
       itemRate: new FormControl(null, [Validators.required, Validators.min(0)]),
-      unitId: new FormControl(0, Validators.required),
-      itemTypeId: new FormControl(0, Validators.required),
+      unitId: new FormControl(0, Validators.min(1)),
+      itemTypeId: new FormControl(0, Validators.min(1)),
       categoryId: new FormControl(0),
     });
 
@@ -79,6 +79,9 @@ export class EditItemComponent implements OnChanges {
         this.getCategoryByItemType(id);
       } else {
         this.categories = [];
+        this.itemForm.patchValue({
+          categoryId: 0,
+        });
         this.isCategoryProcessing = false;
       }
     });

@@ -1,0 +1,13 @@
+.container {
+  max-width: 600px;
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding: 0 12px;
+  }
+
+  button {
+    width: 100%;
+  }
+}

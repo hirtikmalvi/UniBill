@@ -1,0 +1,19 @@
+.table-hover tbody tr:hover {
+  background-color: #f6f9ff;
+}
+
+.table td,
+.table th {
+  vertical-align: middle;
+}
+
+.table-responsive {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+button.btn-sm {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}

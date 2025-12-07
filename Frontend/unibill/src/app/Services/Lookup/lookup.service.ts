@@ -6,6 +6,8 @@ import { BusinessType } from '../../Models/Business/business-type';
 import { UnitByBusiness } from '../../Models/Unit/unit-by-business';
 import { ItemTypeByBusiness } from '../../Models/ItemType/item-type-by-business';
 import { Category } from '../../Models/Category/category';
+import { PaymentMode } from '../../Models/Bill/payment-mode';
+import { BillStatus } from '../../Models/Bill/bill-status';
 
 @Injectable({
   providedIn: 'root',
@@ -36,6 +38,18 @@ export class LookupService {
   getCategoriesByItemType(id: number) {
     return this.http.get<CustomResult<Category[]>>(
       `${this.URL}/lookups/categories/by-item-type/${id}`
+    );
+  }
+
+  getPaymentModes() {
+    return this.http.get<CustomResult<PaymentMode[]>>(
+      `${this.URL}/lookups/payment-modes`
+    );
+  }
+
+  getBillStatuses() {
+    return this.http.get<CustomResult<BillStatus[]>>(
+      `${this.URL}/lookups/bill-statuses`
     );
   }
 }

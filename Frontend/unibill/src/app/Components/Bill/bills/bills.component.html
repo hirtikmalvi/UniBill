@@ -1,0 +1,95 @@
+<div class="container my-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0"><i class="bi bi-receipt"></i> Bills</h3>
+    <button class="btn btn-primary" (click)="onCreateBill()">
+      <i class="bi bi-plus-lg"></i> Create Bill
+    </button>
+  </div>
+
+  <div *ngIf="!isProcessing; else spinner">
+    <div *ngIf="bills?.data?.length; else noBills">
+      <div class="table-responsive shadow-sm rounded">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Bill ID</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th class="text-end">Final Total</th>
+              <th class="text-center">Status</th>
+              <th class="text-center">Payment Mode</th>
+              <th class="text-center">Paid Amount</th>
+              <th class="text-center">Payment Date</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let bill of bills.data">
+              <td>
+                <strong>{{ bill.billId }}</strong>
+              </td>
+
+              <td>
+                {{ bill.customer }}
+                <div class="text-muted small">
+                  {{ bill.customerMobileNumber }}
+                </div>
+              </td>
+
+              <td>
+                {{ bill.date | date : "dd/MM/y, h:mm:ss a" }}
+              </td>
+
+              <td class="text-end fw-semibold text-primary">
+                {{ bill.finalTotal | currency : "INR" }}
+              </td>
+
+              <td class="text-center">{{ bill.billStatus }}</td>
+              <td class="text-center">{{ bill.paymentMode ?? "N/A" }}</td>
+              <td class="text-center">
+                {{ (bill.paymentDate | date : "dd/MM/y") ?? "Pending" }}
+              </td>
+              <td class="text-center">
+                {{ bill.paidAmount ?? 0 | currency : "INR" }}
+              </td>
+
+              <td class="text-center">
+                <button
+                  class="btn btn-sm btn-outline-info me-1"
+                  (click)="onViewBill(bill.billId)"
+                >
+                  <i class="bi bi-eye-fill"></i>
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-warning me-1"
+                  (click)="onEditBill(bill.billId)"
+                >
+                  <i class="bi bi-pencil-fill"></i>
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-danger"
+                  (click)="onDeleteBill(bill.billId)"
+                >
+                  <i class="bi bi-trash3-fill"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <ng-template #noBills>
+      <div class="alert alert-info text-center mt-5 fs-5">
+        No bills found. Create your first bill.
+      </div>
+    </ng-template>
+  </div>
+
+  <ng-template #spinner>
+    <div class="text-center mt-5">
+      <app-spinner></app-spinner>
+    </div>
+  </ng-template>
+</div>

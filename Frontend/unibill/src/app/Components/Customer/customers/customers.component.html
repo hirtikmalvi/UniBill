@@ -1,0 +1,66 @@
+<div class="container my-4">
+  <h3 class="mb-3 h3"><i class="bi bi-people-fill"></i> Customers</h3>
+
+  <!-- LOADING -->
+  <div class="text-center my-4" *ngIf="isProcessing">
+    <app-spinner></app-spinner>
+  </div>
+
+  <!-- CONTENT -->
+  <div *ngIf="!isProcessing">
+    <!-- NO CUSTOMERS -->
+    <div
+      *ngIf="customers.length === 0"
+      class="alert alert-info text-center py-3"
+    >
+      <i class="bi bi-info-circle-fill"></i>
+      No customers found.
+    </div>
+
+    <!-- DESKTOP TABLE -->
+    <div
+      class="table-responsive d-none d-md-block"
+      *ngIf="customers.length > 0"
+    >
+      <table class="table table-hover text-center align-middle shadow-sm">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Mobile</th>
+            <th>Email</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let customer of customers">
+            <td>{{ customer.customerId }}</td>
+            <td class="fw-semibold">{{ customer.customerName }}</td>
+            <td>{{ customer.mobileNumber }}</td>
+            <td>{{ customer.email || "Not Available" }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- MOBILE LIST -->
+    <div class="d-md-none">
+      <div
+        class="customer-card border rounded shadow-sm p-3 mb-3"
+        *ngFor="let customer of customers"
+      >
+        <div class="d-flex justify-content-between">
+          <strong class="h6 mb-0">{{ customer.customerName }}</strong>
+          <small class="text-muted">#{{ customer.customerId }}</small>
+        </div>
+
+        <div class="mt-2 small">
+          <div><strong>Mobile:</strong> {{ customer.mobileNumber }}</div>
+          <div>
+            <strong>Email:</strong> {{ customer.email || "Not Available" }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

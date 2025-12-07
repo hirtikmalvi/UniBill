@@ -58,8 +58,8 @@ export class CreateItemComponent implements OnInit {
         Validators.maxLength(200),
       ]),
       itemRate: new FormControl(null, [Validators.required, Validators.min(0)]),
-      unitId: new FormControl(0, Validators.required),
-      itemTypeId: new FormControl(0, Validators.required),
+      unitId: new FormControl(0, Validators.min(1)),
+      itemTypeId: new FormControl(0, Validators.min(1)),
       categoryId: new FormControl(0),
     });
 
@@ -68,6 +68,9 @@ export class CreateItemComponent implements OnInit {
       if (id && id != 0) {
         this.getCategoryByItemType(id);
       } else {
+        this.itemForm.patchValue({
+          categoryId: 0,
+        });
         this.categories = [];
         this.isCategoryProcessing = false;
       }

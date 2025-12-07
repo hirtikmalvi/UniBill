@@ -65,7 +65,7 @@
         <div
           class="form-text text-danger"
           *ngIf="
-            hasControlError('unitId', 'required') ||
+            hasControlError('unitId', 'min') ||
             (itemForm.get('unitId')?.touched &&
               itemForm.get('unitId')?.value == 0)
           "
@@ -93,7 +93,7 @@
         <div
           class="form-text text-danger"
           *ngIf="
-            hasControlError('itemTypeId', 'required') ||
+            hasControlError('itemTypeId', 'min') ||
             (itemForm.get('itemTypeId')?.touched &&
               itemForm.get('itemTypeId')?.value == 0)
           "
@@ -121,8 +121,10 @@
         <div
           class="form-text text-warning"
           *ngIf="
-            itemForm.get('itemTypeId')?.touched &&
-            itemForm.get('itemTypeId')?.value > 0
+            itemForm.get('categoryId')?.touched &&
+            categories &&
+            categories.length > 0 &&
+            itemForm.get('categoryId')?.value <= 0
           "
         >
           You can select a category (optional).

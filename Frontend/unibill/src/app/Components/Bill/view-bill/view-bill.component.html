@@ -1,0 +1,212 @@
+<div class="container my-4">
+  <!-- LOADING -->
+  <div class="text-center my-5" *ngIf="isLoading">
+    <app-spinner></app-spinner>
+    <p class="mt-2 text-muted">Loading bill...</p>
+  </div>
+
+  <!-- ERROR -->
+  <div class="alert alert-danger text-center" *ngIf="hasError && !isLoading">
+    Failed to load bill.
+    <button class="btn btn-sm btn-primary ms-2" (click)="loadBill()">
+      Retry
+    </button>
+  </div>
+
+  <!-- BILL VIEW -->
+  <div *ngIf="bill && !isLoading">
+    <!-- TOP BAR -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <button class="btn btn-outline-secondary" (click)="goBack()">
+        <i class="bi bi-arrow-left"></i> Back
+      </button>
+
+      <div>
+        <a
+          class="btn btn-outline-primary me-2"
+          [routerLink]="['/bills', bill.billId, 'edit']"
+        >
+          <i class="bi bi-pencil-square"></i> Edit Status
+        </a>
+
+        <button class="btn btn-outline-dark" onclick="window.print()">
+          <i class="bi bi-printer-fill"></i> Print
+        </button>
+      </div>
+    </div>
+
+    <!-- BILL DELETED WARNING -->
+    <div *ngIf="bill.isDeleted" class="alert alert-warning">
+      <strong>This bill is deleted.</strong><br />
+      Deleted At: {{ bill.deletedAt | date : "medium" }}
+    </div>
+
+    <!-- BILL HEADER -->
+    <div class="card shadow-sm border-0 rounded-3 mb-3">
+      <div class="card-body">
+        <h4 class="fw-bold mb-2">Bill #{{ bill.billId }}</h4>
+
+        <p class="mb-1">
+          <strong>Date:</strong>
+          {{ bill.date | date : "EEEE, MMM d, y, h:mm a" }}
+        </p>
+
+        <!-- STATUS SECTION -->
+        <h5 class="mt-3 fw-semibold">Bill Status</h5>
+        <div class="mb-2">
+          <p class="mb-1">
+            <strong>Status:</strong> {{ bill.statusName || "N/A" }}
+          </p>
+
+          <p class="mb-1" *ngIf="bill.paymentModeName">
+            <strong>Payment Mode:</strong> {{ bill.paymentModeName }}
+          </p>
+
+          <p class="mb-1" *ngIf="bill.paidAmount">
+            <strong>Paid Amount:</strong>
+            {{ bill.paidAmount | currency : "INR" }}
+          </p>
+
+          <p class="mb-1" *ngIf="bill.paymentDate">
+            <strong>Payment Date:</strong>
+            {{ bill.paymentDate | date : "mediumDate" }}
+          </p>
+
+          <p class="text-muted mb-1" *ngIf="bill.notes">
+            <strong>Notes:</strong> {{ bill.notes }}
+          </p>
+        </div>
+
+        <!-- CUSTOMER -->
+        <h5 class="mt-3 fw-semibold">Customer</h5>
+        <div *ngIf="bill.customer; else noCust">
+          <p class="mb-1"><strong>Name:</strong> {{ bill.customer }}</p>
+          <p class="mb-1">
+            <strong>Mobile:</strong> {{ bill.customerMobileNumber }}
+          </p>
+        </div>
+        <ng-template #noCust>
+          <p class="text-muted">No customer data available</p>
+        </ng-template>
+      </div>
+    </div>
+
+    <!-- BILL ITEMS -->
+    <div class="card shadow-sm border-0 rounded-3">
+      <div class="card-body">
+        <h5 class="fw-semibold mb-3">Items</h5>
+
+        <!-- DESKTOP TABLE -->
+        <div class="table-responsive d-none d-md-block">
+          <table class="table table-bordered table-sm align-middle text-center">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Item</th>
+                <th>Category</th>
+                <th>Type</th>
+                <th>Unit</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let it of bill.billItems; let i = index">
+                <td>{{ i + 1 }}</td>
+
+                <!-- ITEM NAME + ID -->
+                <td>
+                  {{ it.itemName }}
+                  <br />
+                  <small class="text-muted">ID: {{ it.itemId }}</small>
+                </td>
+
+                <td>{{ it.categoryName ?? "N/A" }}</td>
+
+                <td>{{ it.itemTypeName ?? "N/A" }}</td>
+
+                <td>
+                  {{ it.unitName }}
+                  <br />
+                  <small class="text-muted">{{ it.unitShortName }}</small>
+                </td>
+
+                <td>{{ it.quantity }}</td>
+
+                <td>{{ it.rate | currency : "INR" }}</td>
+
+                <td>{{ it.amount | currency : "INR" }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- MOBILE SVG CARDS -->
+        <div class="d-md-none">
+          <div
+            class="p-3 border rounded mb-2"
+            *ngFor="let it of bill.billItems; let i = index"
+          >
+            <div class="d-flex justify-content-between">
+              <strong>{{ it.itemName }}</strong>
+              <span class="text-muted">#{{ it.itemId }}</span>
+            </div>
+
+            <div class="small text-muted">
+              {{ it.categoryName }} • {{ it.itemTypeName }}
+            </div>
+
+            <div class="small mt-2">
+              <div>
+                <strong>Unit:</strong> {{ it.unitName }} ({{
+                  it.unitShortName
+                }})
+              </div>
+              <div><strong>Qty:</strong> {{ it.quantity }}</div>
+              <div><strong>Rate:</strong> {{ it.rate | currency : "INR" }}</div>
+              <div>
+                <strong>Total:</strong> {{ it.amount | currency : "INR" }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BILL SUMMARY -->
+    <div class="card shadow-sm border-0 rounded-3 mt-3">
+      <div class="card-body">
+        <h5 class="fw-semibold mb-3">Bill Summary</h5>
+
+        <div class="row g-2">
+          <div class="col-6">
+            <strong>Subtotal:</strong><br />
+            {{ bill.subTotal | currency : "INR" }}
+          </div>
+
+          <div class="col-6">
+            <strong>Discount ({{ bill.discount }}%)</strong><br />
+            {{ bill.discountAmount | currency : "INR" }}
+          </div>
+
+          <div class="col-6">
+            <strong>Tax ({{ bill.tax }}%)</strong><br />
+            {{ bill.taxAmount | currency : "INR" }}
+          </div>
+
+          <div class="col-6">
+            <strong>Labour Charges:</strong><br />
+            {{ bill.labourCharges | currency : "INR" }}
+          </div>
+
+          <div class="col-12 mt-3">
+            <h4 class="fw-bold">
+              Final Total: {{ bill.finalTotal | currency : "INR" }}
+            </h4>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

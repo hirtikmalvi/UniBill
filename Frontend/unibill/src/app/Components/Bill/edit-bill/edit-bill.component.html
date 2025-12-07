@@ -1,0 +1,183 @@
+<div class="container my-4">
+  <!-- BILL LOADING -->
+  <ng-container *ngIf="isBillLoading; else billFormSection">
+    <div class="text-center py-5">
+      <app-spinner></app-spinner>
+      <p class="text-muted mt-2">Loading Bill Details...</p>
+    </div>
+  </ng-container>
+
+  <!-- ========================== BILL FORM ========================== -->
+  <ng-template #billFormSection>
+    <div class="mx-auto" style="max-width: 600px">
+      <h3 class="mb-4 fw-bold">Update Bill Status</h3>
+
+      <form [formGroup]="billStatusForm" (ngSubmit)="onSubmit()">
+        <!-- =================== STATUS =================== -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Bill Status</label>
+          <select formControlName="statusId" class="form-select">
+            <option [value]="0">Select Bill Status</option>
+            <option
+              *ngFor="let status of billStatuses"
+              [value]="status.statusId"
+            >
+              {{ status.statusName }}
+            </option>
+          </select>
+
+          <!-- ERRORS -->
+          <div
+            class="text-danger small"
+            *ngIf="
+              billStatusForm.errors && billStatusForm.errors['statusRequired']
+            "
+          >
+            Please select a valid bill status.
+          </div>
+        </div>
+
+        <!-- =================== PAYMENT MODE =================== -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Payment Mode</label>
+          <select formControlName="paymentModeId" class="form-select">
+            <option [value]="0">Select Payment Mode</option>
+            <option
+              *ngFor="let mode of paymentModes"
+              [value]="mode.paymentModeId"
+            >
+              {{ mode.modeName }}
+            </option>
+          </select>
+
+          <!-- ERRORS -->
+          <div
+            class="text-danger small"
+            *ngIf="
+              billStatusForm.errors &&
+              billStatusForm.errors['paymentModeRequired']
+            "
+          >
+            Payment mode is required.
+          </div>
+
+          <div
+            class="text-danger small"
+            *ngIf="
+              billStatusForm.errors &&
+              billStatusForm.errors['cancelledHasPayment']
+            "
+          >
+            Payment information is not allowed for Cancelled bills.
+          </div>
+
+          <div
+            class="text-danger small"
+            *ngIf="
+              billStatusForm.errors && billStatusForm.errors['pendingHasPayment']
+            "
+          >
+            Payment fields must be empty for Pending status.
+          </div>
+        </div>
+
+        <!-- =================== PAID AMOUNT =================== -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Paid Amount</label>
+          <input
+            type="number"
+            formControlName="paidAmount"
+            class="form-control"
+            placeholder="Paid Amount"
+          />
+
+          <!-- ERRORS -->
+          <div
+            class="text-danger small"
+            *ngIf="
+              billStatusForm.errors && billStatusForm.errors['paidAmountRequired']
+            "
+          >
+            Paid amount is required.
+          </div>
+
+          <div
+            class="text-danger small"
+            *ngIf="
+              billStatusForm.errors &&
+              billStatusForm.errors['paidTooLargeForPartial']
+            "
+          >
+            Paid amount must be less than Final Total for Partial status.
+          </div>
+
+          <div
+            class="text-danger small"
+            *ngIf="
+              billStatusForm.errors && billStatusForm.errors['paidMustMatchTotal']
+            "
+          >
+            Paid amount must match the Final Total for Paid status.
+          </div>
+
+          <div
+            class="text-danger small"
+            *ngIf="
+              billStatusForm.errors &&
+              billStatusForm.errors['paidAmountNotRequired']
+            "
+          >
+            Paid amount must be 0 for Refunded status.
+          </div>
+        </div>
+
+        <!-- =================== PAYMENT DATE =================== -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Payment Date</label>
+          <input
+            type="date"
+            formControlName="paymentDate"
+            class="form-control"
+          />
+
+          <div
+            class="text-danger small"
+            *ngIf="
+              billStatusForm.errors && billStatusForm.errors['paymentDateRequired']
+            "
+          >
+            Payment date is required.
+          </div>
+        </div>
+
+        <!-- =================== NOTES =================== -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Notes</label>
+          <textarea
+            rows="2"
+            formControlName="notes"
+            class="form-control"
+            placeholder="Notes (optional)"
+          ></textarea>
+        </div>
+
+        <!-- =================== SUBMIT BUTTON =================== -->
+        <div class="text-center mt-4">
+          <button
+            type="submit"
+            class="btn btn-primary px-4 py-2"
+            [disabled]="isSubmitProcessing || billStatusForm.invalid"
+          >
+            <ng-container *ngIf="!isSubmitProcessing; else loader">
+              Update
+            </ng-container>
+          </button>
+
+          <ng-template #loader>
+            <app-spinner></app-spinner>
+          </ng-template>
+        </div>
+      </form>
+    </div>
+  </ng-template>
+</div>
